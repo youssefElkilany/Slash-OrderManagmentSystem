@@ -44,6 +44,12 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+## Database
+
+```bash
+
+# to linkup with postgres database
+$ prisma migrate dev
 
 ## Test
 
