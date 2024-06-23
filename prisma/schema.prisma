@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  name     String
+  password String
+  address  String?
+  Product  Product[]
+  cart     Cart[]
+  coupon   Coupon[]
+  order    Order[]
+  usercoupon userCoupon[]
+  role     Role      @default(user)
+}
+
+model Product {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String?
+  price        Decimal  @default(0.0)
+  stock        Int      @default(1)
+  discount     Int      @default(0)
+  paymentPrice Decimal  @default(0.0)
+  user         User     @relation(fields: [createdBy], references: [id])
+  createdBy    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Cart         cartProduct[]
+  orderProduct  OrderProduct[]
+}
+
+
+model Cart {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int       @unique
+  products  cartProduct[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model cartProduct {
+   id          Int       @id @default(autoincrement())
+  cart         Cart      @relation(fields: [cartId], references: [id])
+  cartId       Int
+  product      Product   @relation(fields: [productId], references: [id])
+  productId    Int
+  quantity     Int       @default(1)
+  
+}
+
+model Order {
+  id            Int          @id @default(autoincrement())
+  user          User         @relation(fields: [orderedBy], references: [id])
+  orderedBy     Int
+  coupon        Coupon?      @relation(fields: [couponId], references: [id])
+  couponId      Int?
+  confirmCoupon Boolean      @default(false)
+  paymentPrice  Decimal      @default(0.0)
+  paymentMethod PaymentType  @default(cash)
+  status        Status
+  address       String
+  discount      Int          @default(0)
+  orderProduct  OrderProduct[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+}
+
+model OrderProduct {
+   id           Int       @id @default(autoincrement())
+   productName  String
+   productPrice Decimal
+   paymentPrice Decimal
+   quantity     Int
+   product      Product   @relation(fields: [productId], references: [id])
+   productId    Int
+   order        Order     @relation(fields: [orderId], references: [id])
+   orderId      Int
+}
+
+model Coupon {
+  id        Int       @id @default(autoincrement())
+  code      String    @unique
+  amount    Int
+  numOfUses Int       @default(1)
+  expireDate DateTime
+  user      User      @relation(fields: [createdBy], references: [id])
+  createdBy    Int       
+  coupon userCoupon[]
+  order  Order[]
+}
+
+model userCoupon {
+  id        Int       @id @default(autoincrement())
+  coupon    Coupon    @relation(fields: [couponId], references: [id])
+  couponId  Int
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int       
+  numOfUses Int       @default(1)
+}
+
+enum Role {
+  user
+  admin
+  seller
+}
+
+enum PaymentType {
+  cash
+  visa
+}
+
+enum Status {
+  placed
+  waitingForPayment
+  cancelled
+  onTheWay
+  delivered
+}
