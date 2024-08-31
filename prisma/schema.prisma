@@ -27,6 +27,8 @@ model User {
   role     Role      @default(user)
 }
 
+// one to many => createdBy to Product => seller can create many products
+
 model Product {
   id           Int      @id @default(autoincrement())
   name         String   @unique
@@ -43,6 +45,8 @@ model Product {
   orderProduct  OrderProduct[]
 }
 
+// many to many => cart to product => cart can have many products and products can be in many cart
+// one to one => user to cart => each user has 1 cart
 
 model Cart {
   id        Int       @id @default(autoincrement())
@@ -63,6 +67,8 @@ model cartProduct {
   
 }
 
+one to many => user to order => user can make many orders
+
 model Order {
   id            Int          @id @default(autoincrement())
   user          User         @relation(fields: [orderedBy], references: [id])
@@ -81,6 +87,8 @@ model Order {
 
 }
 
+// many to many => order to product
+
 model OrderProduct {
    id           Int       @id @default(autoincrement())
    productName  String
@@ -93,6 +101,7 @@ model OrderProduct {
    orderId      Int
 }
 
+// one to many => admin can create many coupon
 model Coupon {
   id        Int       @id @default(autoincrement())
   code      String    @unique
@@ -104,6 +113,9 @@ model Coupon {
   coupon userCoupon[]
   order  Order[]
 }
+
+// many to many => user to coupon => user can use many coupons
+// to track numOfUses for each user
 
 model userCoupon {
   id        Int       @id @default(autoincrement())
